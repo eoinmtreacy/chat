@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import java.io.*;
 import java.net.Socket;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import static chatserver.ChatServer.LOCAL_HOST;
 import static chatserver.ChatServer.DEFAULT_PORT;
