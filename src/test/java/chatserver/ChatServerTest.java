@@ -1,5 +1,7 @@
 package chatserver;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -18,12 +20,9 @@ public class ChatServerTest {
     private static final String TEST_MESSAGE_2    = "Test message 2";
     private static final String TEST_MESSAGE_3    = "Test message 3";
 
-    private ChatServer chatServer;
-
-    @BeforeEach
-    public void createAndStartChatServer() {
-        this.chatServer = new ChatServer();
-        Thread serverThread = new Thread(this.chatServer::start);
+    @BeforeAll
+    public static void createAndStartChatServer() {
+        Thread serverThread = new Thread(ChatServer::start);
         serverThread.start();
     }
 
@@ -38,10 +37,17 @@ public class ChatServerTest {
         client1.join();
         client2.join();
         client3.join();
-        Set<String> messages = chatServer.getMessages();
+        Set<String> messages = ChatServer.getMessages();
         assertTrue(messages.contains(TEST_MESSAGE_1));
         assertTrue(messages.contains(TEST_MESSAGE_2));
         assertTrue(messages.contains(TEST_MESSAGE_3));
+    }
+
+    @Test
+    public void callAndResponse() {
+        assertEquals(TEST_MESSAGE_1, echo(TEST_MESSAGE_1));
+        assertEquals(TEST_MESSAGE_2, echo(TEST_MESSAGE_2));
+        assertEquals(TEST_MESSAGE_3, echo(TEST_MESSAGE_3));
     }
 
     private void sendMessage(String msg) {
@@ -50,6 +56,18 @@ public class ChatServerTest {
             out.println(msg);
         } catch (IOException e) {
             System.out.println("Failed to send message to chat server");
+        }
+    }
+
+    private String echo(String msg) {
+        try (Socket socket = new Socket(LOCAL_HOST, DEFAULT_PORT)) {
+            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+            out.println(msg);
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            return in.readLine();
+        } catch (IOException e) {
+            System.out.println("Failed to send message to chat server");
+            return null;
         }
     }
 
